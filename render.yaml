@@ -13,7 +13,7 @@ services:
       - key: GEMINI_MODEL
         value: gemini-2.0-flash
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.7"
 
   # Frontend (React + Vite Static Site)
   - type: web
