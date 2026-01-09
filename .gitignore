@@ -1,0 +1,16 @@
+# Node / Vite
+proptask-analytics/node_modules/
+proptask-analytics/dist/
+proptask-analytics/.env
+
+# Python / Flask
+backend/.venv/
+backend/.env
+__pycache__/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

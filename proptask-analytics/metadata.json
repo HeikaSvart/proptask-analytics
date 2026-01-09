@@ -1,0 +1,8 @@
+{
+  "name": "Proptask Analytics",
+  "description": "Smart vedlikeholdssystem for vaktmestere. Ta bilde, analyser med AI, og administrer oppgaver med geolokalisering.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
