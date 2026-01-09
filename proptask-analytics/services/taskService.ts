@@ -34,7 +34,9 @@ export const addTask = async (task: MaintenanceTask) => {
   const cleanedData = Object.fromEntries(
     Object.entries(taskData).filter(([_, v]) => v !== undefined)
   );
-  await addDoc(collection(db, COLLECTION_NAME), cleanedData);
+  console.log('addTask: Skriver til Firestore...', { dataSize: JSON.stringify(cleanedData).length });
+  const docRef = await addDoc(collection(db, COLLECTION_NAME), cleanedData);
+  console.log('addTask: Dokument lagret med ID:', docRef.id);
 };
 
 // Oppdatere status
