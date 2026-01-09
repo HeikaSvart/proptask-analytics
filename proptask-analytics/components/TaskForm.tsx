@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Camera, Upload, Loader2, X, Sparkles, AlertCircle, Building, MapPin, MapPinCheck } from 'lucide-react';
 import { analyzeMaintenanceImage } from '../services/geminiService';
 import { MaintenanceTask, TaskPriority, TaskStatus } from '../types';
-import { uploadTaskImage } from '../services/storage';
 import { compressImageToDataUrl } from '../services/imageUtils';
 
 interface TaskFormProps {
@@ -94,20 +93,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) =
     setIsSubmitting(true);
 
     let imageUrl: string | undefined = undefined;
-    try {
-      if (file) {
-        imageUrl = await uploadTaskImage(file);
-      }
-    } catch (e) {
-      console.warn('Storage utilgjengelig, faller tilbake til base64. Det kan påvirke dokumentstørrelse.');
-      // Fallback: komprimer til base64 og lagre direkte i Firestore (hold under ~300KB)
-      if (file) {
-        try {
-          imageUrl = await compressImageToDataUrl(file, 300 * 1024, 1280);
-        } catch (compressErr) {
-          console.error(compressErr);
-          setError('Kunne ikke laste opp eller komprimere bildet. Prøv igjen eller send uten bilde.');
-        }
+    // Bruk base64 direkte (Firebase Storage krever betalt plan)
+    if (file) {
+      try {
+        imageUrl = await compressImageToDataUrl(file, 300 * 1024, 1280);
+      } catch (compressErr) {
+        console.error(compressErr);
+        setError('Kunne ikke komprimere bildet. Prøv igjen eller send uten bilde.');
+        setIsSubmitting(false);
+        return;
       }
     }
 
