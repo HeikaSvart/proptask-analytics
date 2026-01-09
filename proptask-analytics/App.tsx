@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building2, ListTodo, FilterX } from 'lucide-react';
+import { Plus, Building2, ListTodo, FilterX, Lock } from 'lucide-react';
 import { MaintenanceTask, TaskStatus, TaskPriority } from './types';
 import { TaskForm } from './components/TaskForm';
 import { TaskList } from './components/TaskList';
@@ -9,11 +9,63 @@ import { subscribeToTasks, addTask, updateTaskStatus, deleteTask } from './servi
 
 export type TaskFilter = 'ALL' | 'NEW' | 'PROGRESS' | 'COMPLETED' | 'CRITICAL';
 
+const APP_PASSWORD = import.meta.env.VITE_APP_PASSWORD;
+
 function App() {
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [view, setView] = useState<'dashboard' | 'new'>('dashboard');
   const [activeFilter, setActiveFilter] = useState<TaskFilter>('ALL');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (!APP_PASSWORD) return true;
+    return sessionStorage.getItem('proptask_auth') === 'true';
+  });
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === APP_PASSWORD) {
+      sessionStorage.setItem('proptask_auth', 'true');
+      setIsAuthenticated(true);
+      setPasswordError(false);
+    } else {
+      setPasswordError(true);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm border border-slate-200">
+          <div className="flex justify-center mb-6">
+            <div className="bg-indigo-600 p-4 rounded-2xl shadow-lg shadow-indigo-200">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">Proptask</h1>
+          <p className="text-slate-500 text-center mb-6">Skriv inn passord for å fortsette</p>
+          <form onSubmit={handleLogin}>
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
+              placeholder="Passord"
+              className={`w-full px-4 py-3 rounded-xl border ${passwordError ? 'border-red-400 bg-red-50' : 'border-slate-200'} focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4`}
+              autoFocus
+            />
+            {passwordError && <p className="text-red-500 text-sm mb-4">Feil passord</p>}
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+            >
+              Logg inn
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId) || null;
 
