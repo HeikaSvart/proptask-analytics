@@ -1,8 +1,9 @@
 export async function compressImageToDataUrl(
   file: File,
-  targetBytes: number = 300 * 1024,
-  maxDimension: number = 1280
+  targetBytes: number = 100 * 1024,
+  maxDimension: number = 800
 ): Promise<string> {
+  console.log('Komprimerer bilde...', { originalSize: file.size });
   const img = await fileToImage(file);
 
   const { width, height } = scaleToFit(img.width, img.height, maxDimension);
@@ -14,14 +15,18 @@ export async function compressImageToDataUrl(
   ctx.drawImage(img, 0, 0, width, height);
 
   // Try multiple qualities to get under target size
-  const qualities = [0.8, 0.7, 0.6, 0.5];
+  const qualities = [0.6, 0.5, 0.4, 0.3, 0.2];
   for (const q of qualities) {
     const dataUrl = canvas.toDataURL('image/jpeg', q);
-    const approxBytes = Math.ceil((dataUrl.length * 3) / 4) - 2; // base64 to bytes estimate
-    if (approxBytes <= targetBytes) return dataUrl;
+    const approxBytes = Math.ceil((dataUrl.length * 3) / 4) - 2;
+    console.log(`Kvalitet ${q}: ${Math.round(approxBytes / 1024)}KB`);
+    if (approxBytes <= targetBytes) {
+      console.log('Komprimering ferdig');
+      return dataUrl;
+    }
   }
-  // Return last attempt if still over target
-  return canvas.toDataURL('image/jpeg', 0.5);
+  console.log('Bruker laveste kvalitet');
+  return canvas.toDataURL('image/jpeg', 0.2);
 }
 
 function fileToImage(file: File): Promise<HTMLImageElement> {

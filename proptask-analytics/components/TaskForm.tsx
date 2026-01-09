@@ -96,7 +96,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) =
     // Bruk base64 direkte (Firebase Storage krever betalt plan)
     if (file) {
       try {
-        imageUrl = await compressImageToDataUrl(file, 300 * 1024, 1280);
+        console.log('Starter komprimering...');
+        imageUrl = await compressImageToDataUrl(file);
+        console.log('Bilde komprimert, størrelse:', Math.round((imageUrl?.length || 0) / 1024), 'KB');
       } catch (compressErr) {
         console.error(compressErr);
         setError('Kunne ikke komprimere bildet. Prøv igjen eller send uten bilde.');
@@ -119,9 +121,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onCancel }) =
     };
 
     try {
+      console.log('Sender til Firestore...');
       await onTaskCreated(newTask);
+      console.log('Lagret!');
     } catch (error) {
-      console.error(error);
+      console.error('Feil ved lagring:', error);
       setIsSubmitting(false);
     }
   };
