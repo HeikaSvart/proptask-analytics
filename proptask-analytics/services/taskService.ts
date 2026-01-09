@@ -30,7 +30,11 @@ export const subscribeToTasks = (callback: (tasks: MaintenanceTask[]) => void) =
 export const addTask = async (task: MaintenanceTask) => {
   // Vi fjerner ID fordi Firestore lager sin egen
   const { id, ...taskData } = task;
-  await addDoc(collection(db, COLLECTION_NAME), taskData);
+  // Fjern undefined-verdier (Firestore godtar ikke undefined)
+  const cleanedData = Object.fromEntries(
+    Object.entries(taskData).filter(([_, v]) => v !== undefined)
+  );
+  await addDoc(collection(db, COLLECTION_NAME), cleanedData);
 };
 
 // Oppdatere status
