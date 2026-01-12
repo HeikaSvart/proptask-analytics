@@ -1,10 +1,15 @@
 import os
 import json
 import base64
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import google.generativeai as genai
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def create_app():
@@ -18,8 +23,14 @@ def create_app():
         raise RuntimeError("GEMINI_API_KEY is not set. Create a .env with GEMINI_API_KEY.")
 
     genai.configure(api_key=api_key)
-    model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-    model = genai.GenerativeModel(model_name)
+    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    # Add models/ prefix if not present (required for newer models like Gemini 3)
+    if not model_name.startswith("models/"):
+        full_model_name = f"models/{model_name}"
+    else:
+        full_model_name = model_name
+    logger.info(f"Using Gemini model: {full_model_name}")
+    model = genai.GenerativeModel(full_model_name)
 
     @app.post("/api/analyze-image")
     def analyze_image():
