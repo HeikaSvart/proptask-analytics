@@ -56,7 +56,7 @@ def create_app():
             result = model.generate_content(
                 [
                     {"mime_type": mime, "data": image_bytes},
-                    "Du er en ekspert vaktmester-assistent. Analyser bildet, foreslå tittel, beskrivelse og prioritet (LOW, MEDIUM, HIGH, CRITICAL). Returner KUN JSON på norsk uten forklaring.",
+                    "Du er en ekspert vaktmester-assistent. Analyser bildet og returner KUN JSON med disse nøklene: title, description, priority (LOW, MEDIUM, HIGH, CRITICAL), suggestedAction. Skriv innholdet på norsk, men bruk engelske nøkkelnavn.",
                 ],
                 generation_config={
                     "response_mime_type": "application/json",
