@@ -5,8 +5,7 @@ import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -23,10 +22,10 @@ def create_app():
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is not set. Create a .env with GEMINI_API_KEY.")
 
-    # Initialize the new google-genai client
-    client = genai.Client(api_key=api_key)
+    genai.configure(api_key=api_key)
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     logger.info(f"Using Gemini model: {model_name}")
+    model = genai.GenerativeModel(model_name)
 
     @app.post("/api/analyze-image")
     def analyze_image():
@@ -53,27 +52,21 @@ def create_app():
             return jsonify({"error": "No image provided. Upload as multipart 'file' or JSON {base64}"}), 400
 
         try:
-            logger.debug(f"Sending request to Gemini model: {model_name}")
-
-            # Create image part for the new SDK
-            image_part = types.Part.from_bytes(data=image_bytes, mime_type=mime)
-
-            prompt = "Du er en ekspert vaktmester-assistent. Analyser bildet, foreslå tittel, beskrivelse og prioritet (LOW, MEDIUM, HIGH, CRITICAL). Returner KUN JSON på norsk uten forklaring."
-
-            response = client.models.generate_content(
-                model=model_name,
-                contents=[image_part, prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                ),
+            logger.debug(f"Sending request to Gemini model: {model_name}, image size: {len(image_bytes)} bytes")
+            result = model.generate_content(
+                [
+                    {"mime_type": mime, "data": image_bytes},
+                    "Du er en ekspert vaktmester-assistent. Analyser bildet, foreslå tittel, beskrivelse og prioritet (LOW, MEDIUM, HIGH, CRITICAL). Returner KUN JSON på norsk uten forklaring.",
+                ],
+                generation_config={
+                    "response_mime_type": "application/json",
+                },
             )
-
-            text = response.text or ""
-            logger.debug(f"Gemini response text: {text}")
-
+            logger.debug(f"Gemini response: {result}")
+            text = result.text or ""
+            logger.debug(f"Gemini text: {text}")
             if not text:
                 return jsonify({"error": "Empty response from model"}), 502
-
             data = json.loads(text)
             return jsonify(data)
         except Exception as e:
