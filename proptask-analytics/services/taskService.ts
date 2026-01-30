@@ -1,15 +1,16 @@
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  orderBy, 
-  onSnapshot 
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  onSnapshot,
+  arrayUnion
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { MaintenanceTask, TaskStatus } from "../types";
+import { MaintenanceTask, TaskStatus, StatusComment } from "../types";
 
 const COLLECTION_NAME = "tasks";
 
@@ -39,10 +40,24 @@ export const addTask = async (task: MaintenanceTask) => {
   console.log('addTask: Dokument lagret med ID:', docRef.id);
 };
 
-// Oppdatere status
-export const updateTaskStatus = async (id: string, status: TaskStatus) => {
+// Oppdatere status med valgfri kommentar
+export const updateTaskStatus = async (id: string, status: TaskStatus, comment?: string) => {
   const taskRef = doc(db, COLLECTION_NAME, id);
-  await updateDoc(taskRef, { status });
+
+  if (comment && comment.trim()) {
+    const statusComment: StatusComment = {
+      id: crypto.randomUUID(),
+      status,
+      comment: comment.trim(),
+      createdAt: Date.now()
+    };
+    await updateDoc(taskRef, {
+      status,
+      statusComments: arrayUnion(statusComment)
+    });
+  } else {
+    await updateDoc(taskRef, { status });
+  }
 };
 
 // Slette oppgave

@@ -11,6 +11,13 @@ export enum TaskPriority {
   CRITICAL = 'CRITICAL'
 }
 
+export interface StatusComment {
+  id: string;
+  status: TaskStatus;
+  comment: string;
+  createdAt: number;
+}
+
 export interface MaintenanceTask {
   id: string;
   title: string;
@@ -25,6 +32,7 @@ export interface MaintenanceTask {
     latitude: number;
     longitude: number;
   };
+  statusComments?: StatusComment[];
 }
 
 export interface AIAnalysisResult {

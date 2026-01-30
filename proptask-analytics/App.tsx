@@ -18,7 +18,7 @@ function App() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (!APP_PASSWORD) return true;
-    return sessionStorage.getItem('proptask_auth') === 'true';
+    return localStorage.getItem('proptask_auth') === 'true';
   });
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState(false);
@@ -26,7 +26,7 @@ function App() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput === APP_PASSWORD) {
-      sessionStorage.setItem('proptask_auth', 'true');
+      localStorage.setItem('proptask_auth', 'true');
       setIsAuthenticated(true);
       setPasswordError(false);
     } else {
@@ -98,9 +98,9 @@ function App() {
     }
   };
 
-  const handleStatusChange = async (id: string, status: TaskStatus) => {
+  const handleStatusChange = async (id: string, status: TaskStatus, comment?: string) => {
     try {
-      await updateTaskStatus(id, status);
+      await updateTaskStatus(id, status, comment);
     } catch (error) {
       console.error("Feil ved oppdatering:", error);
     }
